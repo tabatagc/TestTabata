@@ -1,0 +1,151 @@
+using CallCenterAgentManager.Api.Controllers;
+using CallCenterAgentManager.API.Swagger;
+using CallCenterAgentManager.Application;
+using CallCenterAgentManager.Application.AutoMapper.Mappings;
+using CallCenterAgentManager.Application.Contracts;
+using CallCenterAgentManager.CrossCutting.Settings;
+using CallCenterAgentManager.Data.Context.Document;
+using CallCenterAgentManager.Data.Context.Relational;
+using CallCenterAgentManager.Data.Repositories;
+using CallCenterAgentManager.Data.Repositories.Factory;
+using CallCenterAgentManager.Domain.Repository;
+using CallCenterAgentManager.Domain.Service;
+using CallCenterAgentManager.Domain.Service.Contracts;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerUI;
+
+
+
+namespace CallCenterAgentManager.Api
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment() || env.EnvironmentName.ToLower() == "development")
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseMiddleware(typeof(ErrorHandlingMiddleware));
+            }
+
+            #region Swagger
+            app.UseSwagger();
+            app.UseSwaggerUI(configuration =>
+            {
+                configuration.SwaggerEndpoint($"/swagger/{Settings.SwaggerAPIVersion}/swagger.json", Settings.SwaggerAPIName);
+                configuration.DocExpansion(DocExpansion.None);
+                configuration.RoutePrefix = string.Empty;
+            });
+            #endregion
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapSwagger();
+                endpoints.MapControllers();
+            });
+        }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            ConfigureSettings();
+            ConfigureSwagger(services);
+
+            services.AddControllers();
+
+            #region Database Configuration
+            if (Settings.UseNoSqlDatabase)
+            {
+                // MongoDB
+                services.AddSingleton<DocumentDbContext>(sp => new DocumentDbContext(
+                    Settings.NoSqlDbConnectionString,
+                    Settings.NoSqlDatabaseName));
+            }
+            else
+            {
+                // PostgreSQL
+                services.AddDbContext<RelationalDbContext>(options =>
+                    options.UseNpgsql(Settings.RelationalDbConnectionString));
+            }
+            #endregion
+
+            #region AutoMapper
+            services.AddAutoMapper(typeof(RequestsProfile), typeof(ResponseProfile));
+
+            #endregion
+
+            #region Application Layer
+            services.AddTransient(typeof(IApplicationBase<>), typeof(ApplicationBase<>));
+            services.AddTransient<IAdminApplication, AdminApplication>();
+            services.AddTransient<IAgentApplication, AgentApplication>();
+            services.AddTransient<IEventApplication, EventApplication>();
+            services.AddTransient<IQueueApplication, QueueApplication>();
+            #endregion
+
+            #region Services Layer
+            services.AddTransient(typeof(IServiceBase<,>), typeof(ServiceBase<,>));
+            services.AddTransient<IAgentService, AgentService>();
+            services.AddTransient<IEventService, EventService>();
+            services.AddTransient<IQueueService, QueueService>();
+
+            #endregion
+
+            #region Repository Layer
+
+            services.AddTransient(typeof(DocumentRepositoryBase<,>));
+            services.AddTransient(typeof(RelationalRepositoryBase<,>));
+
+            services.AddTransient<IRepositoryFactory, RepositoryFactory>();
+            services.AddTransient<Domain.Repository.Relational.IQueueRepository, Data.Repositories.Relational.QueueRepository>();
+            services.AddTransient<Domain.Repository.Document.IQueueRepository, Data.Repositories.Document.QueueRepository>();
+
+            #endregion
+        }
+
+        private void ConfigureSwagger(IServiceCollection services)
+        {
+            services.AddSwaggerGen(options =>
+            {
+                options.OperationFilter<FormDataOperationFilter>();
+                options.SwaggerDoc(Settings.SwaggerAPIVersion, new OpenApiInfo
+                {
+                    Title = Settings.SwaggerAPIName,
+                    Description = $"{Settings.SwaggerAPIName} - {Settings.SwaggerAPIVersion}",
+                    Version = Settings.SwaggerAPIVersion
+                });
+            });
+            services.AddSwaggerGenNewtonsoftSupport(); 
+        }
+
+        private void ConfigureSettings()
+        {
+            #region DataBase Settings
+            Settings.RelationalDbConnectionString = Configuration.GetConnectionString("PostgreSqlConnection");
+            Settings.NoSqlDbConnectionString = Configuration.GetConnectionString("MongoDbConnection");
+            Settings.NoSqlDatabaseName = Configuration["ConnectionStrings:MongoDbName"];
+            Settings.UseNoSqlDatabase = bool.Parse(Configuration["DatabaseSettings:UseNoSqlDatabase"]);
+            #endregion
+
+            #region Swagger Settings
+            Settings.SwaggerAPIName = $"{Configuration["Swagger:APIName"]}";
+            Settings.SwaggerAPIVersion = $"{Configuration["Swagger:APIVersion"]}";
+            #endregion
+        }
+    }
+}
