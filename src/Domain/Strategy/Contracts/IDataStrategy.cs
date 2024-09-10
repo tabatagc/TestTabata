@@ -9,7 +9,7 @@ namespace CallCenterAgentManager.Domain.Strategy.Contracts
     public interface IDataStrategy<TEntity, TId> where TEntity : BaseEntity<TId>
     {
         TEntity GetById(TId id);
-        bool UpdateAgentState(TId id, UpdateAgentStateRequest request);
+        bool UpdateAgentState(Guid id, UpdateAgentStateRequest request);
         EventResponse ProcessEvent(CallCenterEventRequest request);
         IEnumerable<QueueResponse> GetQueuesByAgentId(Guid agentId);
 
@@ -17,5 +17,6 @@ namespace CallCenterAgentManager.Domain.Strategy.Contracts
         void Update(TEntity entity);
         void AddOrUpdate(TEntity entity);
         void Remove(TEntity entity);
+        IEnumerable<TEntity> GetAll();
     }
 }

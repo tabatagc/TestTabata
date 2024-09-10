@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CallCenterAgentManager.Domain.Entities.Contracts;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
+using System.Collections.Generic;
 
 namespace CallCenterAgentManager.Domain.Entities.Document
 {
-    public class Agent : BaseEntity<string>
+    public class Agent : BaseEntity<string>, IAgent
     {
         [BsonElement("agentName")]
         public string AgentName { get; set; }

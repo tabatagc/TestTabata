@@ -14,32 +14,46 @@ namespace CallCenterAgentManager.Domain.Strategy
             _serviceProvider = serviceProvider;
         }
 
-        public IDataStrategy<TEntity, TId> GetCurrentStrategy<TEntity, TId>()
-            where TEntity : BaseEntity<TId>
+        public IDataStrategy<TEntity, TId> GetStrategy<TEntity, TId>() where TEntity : BaseEntity<TId>
         {
             if (Settings.UseNoSqlDatabase)
             {
                 if (typeof(TId) == typeof(string))
                 {
-                    return (IDataStrategy<TEntity, TId>)_serviceProvider.GetService(typeof(DocumentStrategy<TEntity, TId>));
+                    if (typeof(TEntity).IsSubclassOf(typeof(BaseEntity<string>)))
+                    {
+                        var strategyType = typeof(DocumentStrategy<>).MakeGenericType(typeof(TEntity));
+                        return _serviceProvider.GetService(strategyType) as IDataStrategy<TEntity, TId>;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("TEntity must inherit from BaseEntity<string> for DocumentStrategy.");
+                    }
                 }
                 else
                 {
-                    throw new InvalidOperationException("NoSQL database strategy requires string as the ID type.");
+                    throw new InvalidOperationException("DocumentStrategy requires string as the ID type.");
                 }
             }
             else
             {
                 if (typeof(TId) == typeof(Guid))
                 {
-                    return (IDataStrategy<TEntity, TId>)_serviceProvider.GetService(typeof(RelationalStrategy<TEntity, TId>));
+                    if (typeof(TEntity).IsSubclassOf(typeof(BaseEntity<Guid>)))
+                    {
+                        var strategyType = typeof(RelationalStrategy<>).MakeGenericType(typeof(TEntity));
+                        return _serviceProvider.GetService(strategyType) as IDataStrategy<TEntity, TId>;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("TEntity must inherit from BaseEntity<Guid> for RelationalStrategy.");
+                    }
                 }
                 else
                 {
-                    throw new InvalidOperationException("Relational database strategy requires Guid as the ID type.");
+                    throw new InvalidOperationException("RelationalStrategy requires Guid as the ID type.");
                 }
             }
         }
     }
-
 }

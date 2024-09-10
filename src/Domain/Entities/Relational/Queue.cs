@@ -1,10 +1,11 @@
-﻿using System;
+﻿using CallCenterAgentManager.Domain.Entities.Contracts;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CallCenterAgentManager.Domain.Entities.Relational
 {
-    public class Queue : BaseEntity<Guid>
+    public class Queue : BaseEntity<Guid>, IQueue
     {
         [Required]
         [MaxLength(100)]

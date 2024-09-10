@@ -2,6 +2,7 @@
 using CallCenterAgentManager.Application.Contracts;
 using CallCenterAgentManager.Domain.DTO.Request;
 using CallCenterAgentManager.Domain.DTO.Response;
+using CallCenterAgentManager.Domain.Entities;
 using CallCenterAgentManager.Domain.Service.Contracts;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,7 +10,7 @@ using System.Collections.Generic;
 
 namespace CallCenterAgentManager.Application
 {
-    public class AgentApplication : IAgentApplication
+    public class AgentApplication : ApplicationBase<AgentBase<Guid>, Guid>, IAgentApplication
     {
         private readonly IAgentService _agentService;
         private readonly IMapper _mapper;
@@ -18,7 +19,9 @@ namespace CallCenterAgentManager.Application
         public AgentApplication(
             IAgentService agentService,
             IMapper mapper,
-            ILogger<AgentApplication> logger)
+            ILogger<AgentApplication> logger,
+            IServiceBase<AgentBase<Guid>, Guid> serviceBase)
+            : base(serviceBase)
         {
             _agentService = agentService;
             _mapper = mapper;
@@ -29,71 +32,14 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                return _agentService.GetById(agentId);
+                return new BaseResponse<AgentResponse>
+                {
+                    Data = _mapper.Map<AgentResponse>(_agentService.GetById(agentId))
+                };
             }
             catch (Exception ex)
             {
                 return LogAndReturnError<AgentResponse>("Error fetching agent by ID", ex);
-            }
-        }
-
-        public BaseResponse<AgentResponse> CreateAgent(AgentCreateRequest request)
-        {
-            try
-            {
-                return _agentService.CreateAgent(request);
-            }
-            catch (Exception ex)
-            {
-                return LogAndReturnError<AgentResponse>("Error creating agent", ex);
-            }
-        }
-
-        public BaseResponse<AgentResponse> UpdateAgent(Guid agentId, AgentUpdateRequest request)
-        {
-            try
-            {
-                return _agentService.UpdateAgent(agentId, request);
-            }
-            catch (Exception ex)
-            {
-                return LogAndReturnError<AgentResponse>("Error updating agent", ex);
-            }
-        }
-
-        public BaseResponse<bool> DeleteAgent(Guid agentId)
-        {
-            try
-            {
-                return _agentService.DeleteAgent(agentId);
-            }
-            catch (Exception ex)
-            {
-                return LogAndReturnError<bool>("Error deleting agent", ex);
-            }
-        }
-
-        public BaseResponse<AgentResponse> GetAgentState(Guid agentId)
-        {
-            try
-            {
-                return _agentService.GetAgentState(agentId);
-            }
-            catch (Exception ex)
-            {
-                return LogAndReturnError<AgentResponse>("Error getting agent state", ex);
-            }
-        }
-
-        public BaseResponse<bool> UpdateAgentState(Guid agentId, UpdateAgentStateRequest request)
-        {
-            try
-            {
-                return _agentService.UpdateAgentState(agentId, request);
-            }
-            catch (Exception ex)
-            {
-                return LogAndReturnError<bool>("Error updating agent state", ex);
             }
         }
 

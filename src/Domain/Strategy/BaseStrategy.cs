@@ -8,8 +8,7 @@ using System.Collections.Generic;
 
 namespace CallCenterAgentManager.Domain.Strategy
 {
-    public abstract class BaseStrategy<TEntity, TId> : IDataStrategy<TEntity, TId>
-        where TEntity : BaseEntity<TId>
+    public abstract class BaseStrategy<TEntity, TId> : IDataStrategy<TEntity, TId> where TEntity : BaseEntity<TId>
     {
         protected readonly IRepositoryFactory _repositoryFactory;
 
@@ -17,12 +16,6 @@ namespace CallCenterAgentManager.Domain.Strategy
         {
             _repositoryFactory = repositoryFactory;
         }
-
-        //public virtual TEntity GetAgentById(TId id)
-        //{
-        //    var repository = _repositoryFactory.GetRepository<TEntity, TId>();
-        //    return repository.GetById(id);
-        //}
 
         public abstract TEntity GetById(TId id);
 
@@ -49,8 +42,14 @@ namespace CallCenterAgentManager.Domain.Strategy
             var repository = _repositoryFactory.GetRepository<TEntity, TId>();
             repository.Remove(entity);
         }
+        public IEnumerable<TEntity> GetAll()
+        {
+            var repository = _repositoryFactory.GetRepository<TEntity, TId>();
+            return repository.GetAll();  
+        }
 
-        public abstract bool UpdateAgentState(TId agentId, UpdateAgentStateRequest request);
+
+        public abstract bool UpdateAgentState(Guid agentId, UpdateAgentStateRequest request);
         public abstract EventResponse ProcessEvent(CallCenterEventRequest request);
         public abstract IEnumerable<QueueResponse> GetQueuesByAgentId(Guid agentId);
     }

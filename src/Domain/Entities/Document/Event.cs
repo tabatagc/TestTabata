@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using CallCenterAgentManager.Domain.Entities.Contracts;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace CallCenterAgentManager.Domain.Entities.Document
 {
-    public class Event : BaseEntity<string>
+    public class Event : BaseEntity<string>, IEvent
     {
 
         [BsonElement("agentId")]

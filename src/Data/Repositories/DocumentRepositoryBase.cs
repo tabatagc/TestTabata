@@ -52,6 +52,7 @@ namespace CallCenterAgentManager.Data.Repositories
             else
                 Add(entity);
         }
+
         protected IEnumerable<TEntity> FindByFilter(FilterDefinition<TEntity> filter)
         {
             return _collection.Find(filter).ToList();

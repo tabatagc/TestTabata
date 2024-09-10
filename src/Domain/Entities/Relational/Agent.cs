@@ -1,10 +1,11 @@
+using CallCenterAgentManager.Domain.Entities.Contracts;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CallCenterAgentManager.Domain.Entities.Relational
 {
-    public class Agent : BaseEntity<Guid>
+    public class Agent : BaseEntity<Guid>, IAgent
     {
 
         [Required]

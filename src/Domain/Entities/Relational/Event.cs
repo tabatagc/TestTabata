@@ -1,10 +1,11 @@
+using CallCenterAgentManager.Domain.Entities.Contracts;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CallCenterAgentManager.Domain.Entities.Relational
 {
-    public class Event : BaseEntity<Guid>
+    public class Event : BaseEntity<Guid>, IEvent
     {
         [Required]
         public Guid AgentId { get; set; }

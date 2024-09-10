@@ -1,12 +1,10 @@
-﻿using System;
-using System.Security.Cryptography;
-using CallCenterAgentManager.Application.Contracts;
+﻿using CallCenterAgentManager.Application.Contracts;
 using CallCenterAgentManager.Domain.Entities;
 using CallCenterAgentManager.Domain.Service.Contracts;
 
 namespace CallCenterAgentManager.Application
 {
-    public class ApplicationBase<TEntity, TId> : IApplicationBase<TEntity>
+    public class ApplicationBase<TEntity, TId> : IApplicationBase<TEntity, TId>
         where TEntity : BaseEntity<TId>
     {
         private readonly IServiceBase<TEntity, TId> _serviceBase;
@@ -26,7 +24,7 @@ namespace CallCenterAgentManager.Application
             _serviceBase.AddOrUpdate(entity);
         }
 
-        public TEntity GetById(Guid id)
+        public TEntity GetById(TId id)
         {
             return _serviceBase.GetById(id);
         }

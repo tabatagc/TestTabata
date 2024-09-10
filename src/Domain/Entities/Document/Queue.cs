@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using CallCenterAgentManager.Domain.Entities.Contracts;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace CallCenterAgentManager.Domain.Entities.Document
 {
-    public class Queue : BaseEntity<string>
+    public class Queue : BaseEntity<string>, IQueue
     {
         [BsonElement("queueName")]
         public string QueueName { get; set; }
