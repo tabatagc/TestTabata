@@ -4,29 +4,27 @@ using CallCenterAgentManager.Domain.Entities;
 using CallCenterAgentManager.Domain.Entities.Document;
 using CallCenterAgentManager.Domain.Repository;
 using CallCenterAgentManager.Domain.Repository.Document;
-using CallCenterAgentManager.Domain.Strategy.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace CallCenterAgentManager.Domain.Strategy
 {
-    public class DocumentStrategy<TEntity> : BaseStrategy<TEntity, string> where TEntity : BaseEntity<string>
+    public class DocumentStrategy<TEntity, TId> : BaseStrategy<TEntity, TId> where TEntity : BaseEntity<TId>
     {
-        private readonly IRepositoryBase<TEntity, string> _repository;
+        private readonly IRepositoryBase<TEntity, TId> _repository;
         private readonly IQueueRepository _queueRepository;
 
         public DocumentStrategy(IRepositoryFactory repositoryFactory, IQueueRepository queueRepository)
-            : base(repositoryFactory)
+              : base(repositoryFactory)
         {
-            _repository = repositoryFactory.GetRepository<TEntity, string>();
+            _repository = repositoryFactory.GetRepository<TEntity, TId>();
             _queueRepository = queueRepository;
         }
 
-        public override TEntity GetById(string id)
+        public override TEntity GetById(TId id)
         {
-            var stringId = id.ToString();
-            return _repository.GetById(stringId);
+            return _repository.GetById(id);
         }
 
         public override bool UpdateAgentState(Guid agentId, UpdateAgentStateRequest request)

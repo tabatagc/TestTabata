@@ -22,7 +22,7 @@ namespace CallCenterAgentManager.Domain.Strategy
                 {
                     if (typeof(TEntity).IsSubclassOf(typeof(BaseEntity<string>)))
                     {
-                        var strategyType = typeof(DocumentStrategy<>).MakeGenericType(typeof(TEntity));
+                        var strategyType = typeof(DocumentStrategy<,>).MakeGenericType(typeof(TEntity), typeof(TId));
                         return _serviceProvider.GetService(strategyType) as IDataStrategy<TEntity, TId>;
                     }
                     else
@@ -41,7 +41,7 @@ namespace CallCenterAgentManager.Domain.Strategy
                 {
                     if (typeof(TEntity).IsSubclassOf(typeof(BaseEntity<Guid>)))
                     {
-                        var strategyType = typeof(RelationalStrategy<>).MakeGenericType(typeof(TEntity));
+                        var strategyType = typeof(RelationalStrategy<,>).MakeGenericType(typeof(TEntity), typeof(TId));
                         return _serviceProvider.GetService(strategyType) as IDataStrategy<TEntity, TId>;
                     }
                     else

@@ -4,26 +4,25 @@ using CallCenterAgentManager.Domain.Entities;
 using CallCenterAgentManager.Domain.Entities.Relational;
 using CallCenterAgentManager.Domain.Repository;
 using CallCenterAgentManager.Domain.Repository.Relational;
-using CallCenterAgentManager.Domain.Strategy.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace CallCenterAgentManager.Domain.Strategy
 {
-    public class RelationalStrategy<TEntity> : BaseStrategy<TEntity, Guid> where TEntity : BaseEntity<Guid>
+    public class RelationalStrategy<TEntity, TId> : BaseStrategy<TEntity, TId> where TEntity : BaseEntity<TId>
     {
-        private readonly IRepositoryBase<TEntity, Guid> _repository;
+        private readonly IRepositoryBase<TEntity, TId> _repository;
         private readonly IQueueRepository _queueRepository;
 
         public RelationalStrategy(IRepositoryFactory repositoryFactory, IQueueRepository queueRepository)
             : base(repositoryFactory)
         {
-            _repository = repositoryFactory.GetRepository<TEntity, Guid>();
+            _repository = repositoryFactory.GetRepository<TEntity, TId>();
             _queueRepository = queueRepository;
         }
 
-        public override TEntity GetById(Guid id)
+        public override TEntity GetById(TId id)
         {
             return _repository.GetById(id);
         }

@@ -104,7 +104,7 @@ namespace CallCenterAgentManager.Api
 
             #region Services Layer
             services.AddTransient(typeof(IServiceBase<,>), typeof(ServiceBase<,>));
-            #region Services Layer
+
             services.AddTransient(typeof(IServiceBase<Domain.Entities.Relational.Agent, Guid>), typeof(AgentService<Domain.Entities.Relational.Agent, Guid>));
             services.AddTransient(typeof(IServiceBase<Domain.Entities.Document.Agent, string>), typeof(AgentService<Domain.Entities.Document.Agent, string>));
 
@@ -113,15 +113,12 @@ namespace CallCenterAgentManager.Api
 
             services.AddTransient(typeof(IQueueService<Domain.Entities.Relational.Queue, Guid>), typeof(QueueService<Domain.Entities.Relational.Queue, Guid>));
             services.AddTransient(typeof(IQueueService<Domain.Entities.Document.Queue, string>), typeof(QueueService<Domain.Entities.Document.Queue, string>));
-            #endregion
-
-
-            // Register the StrategyFactory and the strategies
+       
+         
             services.AddSingleton<StrategyFactory>();
-            services.AddTransient(typeof(IDataStrategy<,>), typeof(DocumentStrategy<>));
-            services.AddTransient(typeof(IDataStrategy<,>), typeof(RelationalStrategy<>));
+            services.AddTransient(typeof(IDataStrategy<,>), typeof(DocumentStrategy<,>));
+            services.AddTransient(typeof(IDataStrategy<,>), typeof(RelationalStrategy<,>));
 
-            // Register the repository factory and repositories as well
             services.AddSingleton<IRepositoryFactory, RepositoryFactory>();
 
 
