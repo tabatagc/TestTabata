@@ -6,7 +6,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace CallCenterAgentManager.Domain.Entities.Document
 {
-    public class Event : BaseEntity<string>, IEvent
+    public class Event : EventBase<string>, IEvent
     {
 
         [BsonElement("agentId")]

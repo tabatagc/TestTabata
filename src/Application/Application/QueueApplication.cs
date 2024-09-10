@@ -2,32 +2,36 @@
 using CallCenterAgentManager.Application.Contracts;
 using CallCenterAgentManager.Domain.DTO.Request;
 using CallCenterAgentManager.Domain.DTO.Response;
+using CallCenterAgentManager.Domain.Entities;
 using CallCenterAgentManager.Domain.Service.Contracts;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 
 namespace CallCenterAgentManager.Application
 {
-    public class QueueApplication : IQueueApplication
+    public class QueueApplication : ApplicationBase<QueueBase<Guid>, Guid>, IQueueApplication
     {
-        private readonly IQueueService _queueService;
+        private readonly IServiceBase<QueueBase<Guid>, Guid> _serviceBase;
         private readonly IMapper _mapper;
         private readonly ILogger<QueueApplication> _logger;
 
-        public QueueApplication(IQueueService queueService, IMapper mapper, ILogger<QueueApplication> logger)
+        public QueueApplication(
+            IMapper mapper,
+            ILogger<QueueApplication> logger,
+            IServiceBase<QueueBase<Guid>, Guid> serviceBase)
+            : base(serviceBase)
         {
-            _queueService = queueService;
             _mapper = mapper;
             _logger = logger;
+            _serviceBase = serviceBase;
         }
 
         public BaseResponse<QueueResponse> GetQueueById(Guid queueId)
         {
             try
             {
-                var queue = _queueService.GetById(queueId);
-                return new BaseResponse<QueueResponse> { Data = _mapper.Map<QueueResponse>(queue) };
+                var queue = GetById(queueId);
+                var queueResponse = _mapper.Map<QueueResponse>(queue);
+                return new BaseResponse<QueueResponse> { Data = queueResponse };
             }
             catch (Exception ex)
             {
@@ -39,8 +43,10 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                var queues = _queueService.GetAll();
-                return new BaseResponse<IEnumerable<QueueResponse>> { Data = _mapper.Map<IEnumerable<QueueResponse>>(queues) };
+                var queues = _serviceBase.GetAll();
+                var queueResponses = _mapper.Map<IEnumerable<QueueResponse>>(queues);
+
+                return new BaseResponse<IEnumerable<QueueResponse>> { Data = queueResponses };
             }
             catch (Exception ex)
             {
@@ -52,7 +58,8 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                _queueService.Add(_mapper.Map<Queue>(request));
+                var newQueue = _mapper.Map<QueueBase<Guid>>(request);
+                Add(newQueue);
                 return new BaseResponse<bool> { Data = true };
             }
             catch (Exception ex)
@@ -65,14 +72,14 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                var queue = _queueService.GetById(queueId);
+                var queue = GetById(queueId);
                 if (queue == null)
                 {
                     return new BaseResponse<bool> { Errors = new List<ErrorResponse> { new ErrorResponse { ErrorMessage = "Queue not found." } } };
                 }
 
                 _mapper.Map(request, queue);
-                _queueService.Update(queue);
+                Update(queue);
                 return new BaseResponse<bool> { Data = true };
             }
             catch (Exception ex)
@@ -85,13 +92,13 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                var queue = _queueService.GetById(queueId);
+                var queue = GetById(queueId);
                 if (queue == null)
                 {
                     return new BaseResponse<bool> { Errors = new List<ErrorResponse> { new ErrorResponse { ErrorMessage = "Queue not found." } } };
                 }
 
-                _queueService.Remove(queue);
+                Remove(queue);
                 return new BaseResponse<bool> { Data = true };
             }
             catch (Exception ex)
@@ -102,7 +109,7 @@ namespace CallCenterAgentManager.Application
 
         public IEnumerable<QueueResponse> GetQueuesByAgentId(Guid agentId)
         {
-            return _queueService.GetQueuesByAgentId(agentId);
+            return _serviceBase.GetQueuesByAgentId(agentId);
         }
 
         private BaseResponse<T> LogAndReturnError<T>(string message, Exception ex)

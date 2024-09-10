@@ -2,42 +2,41 @@
 using CallCenterAgentManager.Application.Contracts;
 using CallCenterAgentManager.Domain.DTO.Request;
 using CallCenterAgentManager.Domain.DTO.Response;
+using CallCenterAgentManager.Domain.Entities;
 using CallCenterAgentManager.Domain.Service.Contracts;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 
 namespace CallCenterAgentManager.Application
 {
-    public class EventApplication : IEventApplication
+    public class EventApplication : ApplicationBase<EventBase<Guid>, Guid>, IEventApplication
     {
-        private readonly IEventService _eventService;
+        private readonly IServiceBase<EventBase<Guid>, Guid> _serviceBase;
         private readonly IMapper _mapper;
         private readonly ILogger<EventApplication> _logger;
 
         public EventApplication(
-            IEventService eventService,
             IMapper mapper,
-            ILogger<EventApplication> logger)
+            ILogger<EventApplication> logger,
+            IServiceBase<EventBase<Guid>, Guid> serviceBase)
+            : base(serviceBase)
         {
-            _eventService = eventService;
             _mapper = mapper;
             _logger = logger;
+            _serviceBase = serviceBase;
         }
 
         public BaseResponse<EventResponse> ProcessEvent(CallCenterEventRequest request)
         {
             try
             {
-                return _eventService.ProcessEvent(request);
+                var eventEntity = _mapper.Map<EventBase<Guid>>(request);
+                Add(eventEntity);
+                var eventResponse = _mapper.Map<EventResponse>(eventEntity);
+                return new BaseResponse<EventResponse> { Data = eventResponse };
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error processing event: {ex.Message}");
-                return new BaseResponse<EventResponse>
-                {
-                    Errors = new[] { new ErrorResponse { ErrorMessage = "Error processing event." } }
-                };
+                return LogAndReturnError<EventResponse>("Error processing event", ex);
             }
         }
 
@@ -45,16 +44,24 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                return _eventService.GetRecentEvents();
+                var events = _serviceBase.GetAll();
+                var eventResponses = _mapper.Map<IEnumerable<EventResponse>>(events);
+
+                return new BaseResponse<IEnumerable<EventResponse>> { Data = eventResponses };
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error fetching recent events: {ex.Message}");
-                return new BaseResponse<IEnumerable<EventResponse>>
-                {
-                    Errors = new[] { new ErrorResponse { ErrorMessage = "Error fetching recent events." } }
-                };
+                return LogAndReturnError<IEnumerable<EventResponse>>("Error fetching recent events", ex);
             }
+        }
+
+        private BaseResponse<T> LogAndReturnError<T>(string message, Exception ex)
+        {
+            _logger.LogError(ex, message);
+            return new BaseResponse<T>
+            {
+                Errors = new List<ErrorResponse> { new ErrorResponse { ErrorMessage = message } }
+            };
         }
     }
 }

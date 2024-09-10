@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CallCenterAgentManager.Domain.Entities.Relational
 {
-    public class Event : BaseEntity<Guid>, IEvent
+    public class Event : EventBase<Guid>, IEvent
     {
         [Required]
         public Guid AgentId { get; set; }

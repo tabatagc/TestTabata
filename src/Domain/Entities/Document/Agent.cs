@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace CallCenterAgentManager.Domain.Entities.Document
 {
-    public class Agent : BaseEntity<string>, IAgent
+    public class Agent : AgentBase<string>, IAgent
     {
         [BsonElement("agentName")]
         public string AgentName { get; set; }

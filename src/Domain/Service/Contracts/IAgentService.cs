@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace CallCenterAgentManager.Domain.Service.Contracts
 {
-    public interface IAgentService : IServiceBase<AgentBase<Guid>, Guid>
+    public interface IAgentService<TAgent, TId>
     {
         BaseResponse<AgentResponse> GetAgentById(Guid agentId);
         BaseResponse<bool> UpdateAgentState(Guid agentId, UpdateAgentStateRequest request);

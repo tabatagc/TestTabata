@@ -1,10 +1,10 @@
 ﻿using CallCenterAgentManager.Domain.DTO.Request;
 using CallCenterAgentManager.Domain.DTO.Response;
-using System.Collections.Generic;
+using CallCenterAgentManager.Domain.Entities;
 
 namespace CallCenterAgentManager.Application.Contracts
 {
-    public interface IEventApplication
+    public interface IEventApplication : IApplicationBase<EventBase<Guid>, Guid>
     {
         BaseResponse<EventResponse> ProcessEvent(CallCenterEventRequest request);
         BaseResponse<IEnumerable<EventResponse>> GetRecentEvents();

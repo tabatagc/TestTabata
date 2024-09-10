@@ -12,7 +12,7 @@ namespace CallCenterAgentManager.Data.Context.Relational
             var optionsBuilder = new DbContextOptionsBuilder<RelationalDbContext>();
 
             IConfigurationRoot configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(Directory.GetCurrentDirectory()) 
                 .AddJsonFile("appsettings.json")
                 .Build();
 

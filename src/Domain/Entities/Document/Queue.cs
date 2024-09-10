@@ -6,7 +6,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace CallCenterAgentManager.Domain.Entities.Document
 {
-    public class Queue : BaseEntity<string>, IQueue
+    public class Queue : QueueBase<string>, IQueue
     {
         [BsonElement("queueName")]
         public string QueueName { get; set; }

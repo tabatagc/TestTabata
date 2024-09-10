@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace CallCenterAgentManager.Domain.Service.Contracts
 {
-    public interface IQueueService
+    public interface IQueueService<TQueue, TId>
     {
         BaseResponse<IEnumerable<QueueResponse>> GetQueuesByAgentId(Guid agentId);
     }

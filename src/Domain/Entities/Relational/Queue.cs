@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CallCenterAgentManager.Domain.Entities.Relational
 {
-    public class Queue : BaseEntity<Guid>, IQueue
+    public class Queue : QueueBase<Guid>, IQueue
     {
         [Required]
         [MaxLength(100)]

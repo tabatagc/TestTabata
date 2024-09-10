@@ -9,5 +9,10 @@ namespace CallCenterAgentManager.Application.Contracts
         BaseResponse<AgentResponse> GetAgentById(Guid agentId);
         BaseResponse<IEnumerable<AgentResponse>> GetAllAgents();
         BaseResponse<AgentResponse> CreateAgent(AgentCreateRequest request);
+
+        BaseResponse<bool> UpdateAgent(Guid agentId, AgentUpdateRequest request);
+        BaseResponse<bool> DeleteAgent(Guid agentId);
+        BaseResponse<AgentResponse> GetAgentState(Guid agentId); 
+        BaseResponse<bool> UpdateAgentState(Guid agentId, UpdateAgentStateRequest request);
     }
 }

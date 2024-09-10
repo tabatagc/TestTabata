@@ -1,11 +1,10 @@
 ﻿using CallCenterAgentManager.Domain.DTO.Request;
 using CallCenterAgentManager.Domain.DTO.Response;
-using System;
-using System.Collections.Generic;
+using CallCenterAgentManager.Domain.Entities;
 
 namespace CallCenterAgentManager.Application.Contracts
 {
-    public interface IQueueApplication
+    public interface IQueueApplication : IApplicationBase<QueueBase<Guid>, Guid>
     {
         BaseResponse<QueueResponse> GetQueueById(Guid queueId);
         BaseResponse<IEnumerable<QueueResponse>> GetAllQueues();

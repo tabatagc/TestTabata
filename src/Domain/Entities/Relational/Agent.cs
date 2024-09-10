@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CallCenterAgentManager.Domain.Entities.Relational
 {
-    public class Agent : BaseEntity<Guid>, IAgent
+    public class Agent : AgentBase<Guid>, IAgent
     {
 
         [Required]
