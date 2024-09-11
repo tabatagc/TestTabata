@@ -10,12 +10,14 @@ namespace CallCenterAgentManager.Application.AutoMapper.Mappings
             CreateMap<AgentCreateRequest, Domain.Entities.Relational.Agent>()
                 .ForMember(dest => dest.AgentName, opt => opt.MapFrom(src => src.AgentName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.State, opt => opt.MapFrom(src => "AVAILABLE"));
+                .ForMember(dest => dest.State, opt => opt.MapFrom(src => "AVAILABLE"))
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
 
             CreateMap<AgentCreateRequest, Domain.Entities.Document.Agent>()
                 .ForMember(dest => dest.AgentName, opt => opt.MapFrom(src => src.AgentName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.State, opt => opt.MapFrom(src => "AVAILABLE"));
+                .ForMember(dest => dest.State, opt => opt.MapFrom(src => "AVAILABLE"))
+                .ForMember(dest => dest.Id, opt => opt.Ignore()); 
 
             CreateMap<AgentUpdateRequest, Domain.Entities.Relational.Agent>()
                 .ForMember(dest => dest.AgentName, opt => opt.MapFrom(src => src.AgentName))
@@ -24,6 +26,7 @@ namespace CallCenterAgentManager.Application.AutoMapper.Mappings
             CreateMap<AgentUpdateRequest, Domain.Entities.Document.Agent>()
                 .ForMember(dest => dest.AgentName, opt => opt.MapFrom(src => src.AgentName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
+
 
             CreateMap<CallCenterEventRequest, Domain.Entities.Relational.Event>()
                 .ForMember(dest => dest.AgentId, opt => opt.MapFrom(src => src.AgentId))
@@ -35,6 +38,7 @@ namespace CallCenterAgentManager.Application.AutoMapper.Mappings
                 .ForMember(dest => dest.Action, opt => opt.MapFrom(src => src.Action))
                 .ForMember(dest => dest.TimestampUtc, opt => opt.MapFrom(src => src.TimestampUtc));
 
+
             CreateMap<QueueCreateRequest, Domain.Entities.Relational.Queue>()
                 .ForMember(dest => dest.QueueName, opt => opt.MapFrom(src => src.QueueName));
 
@@ -42,4 +46,5 @@ namespace CallCenterAgentManager.Application.AutoMapper.Mappings
                 .ForMember(dest => dest.QueueName, opt => opt.MapFrom(src => src.QueueName));
         }
     }
+
 }
