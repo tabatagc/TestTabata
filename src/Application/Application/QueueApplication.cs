@@ -10,19 +10,20 @@ namespace CallCenterAgentManager.Application
 {
     public class QueueApplication : ApplicationBase<QueueBase<Guid>, Guid>, IQueueApplication
     {
-        private readonly IServiceBase<QueueBase<Guid>, Guid> _serviceBase;
+        private readonly IQueueService<QueueBase<Guid>, Guid> _queueService;
         private readonly IMapper _mapper;
         private readonly ILogger<QueueApplication> _logger;
 
         public QueueApplication(
             IMapper mapper,
             ILogger<QueueApplication> logger,
-            IServiceBase<QueueBase<Guid>, Guid> serviceBase)
+            IServiceBase<QueueBase<Guid>, Guid> serviceBase,
+            IQueueService<QueueBase<Guid>, Guid> queueService)
             : base(serviceBase)
         {
             _mapper = mapper;
             _logger = logger;
-            _serviceBase = serviceBase;
+            _queueService = queueService;
         }
 
         public BaseResponse<QueueResponse> GetQueueById(Guid queueId)
@@ -43,7 +44,7 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                var queues = _serviceBase.GetAll();
+                var queues = GetAll();
                 var queueResponses = _mapper.Map<IEnumerable<QueueResponse>>(queues);
 
                 return new BaseResponse<IEnumerable<QueueResponse>> { Data = queueResponses };
@@ -109,7 +110,7 @@ namespace CallCenterAgentManager.Application
 
         public IEnumerable<QueueResponse> GetQueuesByAgentId(Guid agentId)
         {
-            return _serviceBase.GetQueuesByAgentId(agentId);
+            return _queueService.GetQueuesByAgentId(agentId).Data;
         }
 
         private BaseResponse<T> LogAndReturnError<T>(string message, Exception ex)

@@ -38,5 +38,10 @@ namespace CallCenterAgentManager.Application
         {
             _serviceBase.Update(entity);
         }
+
+        public IEnumerable<TEntity> GetAll()
+        {
+            return _serviceBase.GetAll();
+        }
     }
 }

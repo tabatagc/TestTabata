@@ -7,9 +7,7 @@ namespace CallCenterAgentManager.Application.Contracts
     public interface IAgentApplication : IApplicationBase<AgentBase<Guid>, Guid>
     {
         BaseResponse<AgentResponse> GetAgentById(Guid agentId);
-        BaseResponse<IEnumerable<AgentResponse>> GetAllAgents();
         BaseResponse<AgentResponse> CreateAgent(AgentCreateRequest request);
-
         BaseResponse<bool> UpdateAgent(Guid agentId, AgentUpdateRequest request);
         BaseResponse<bool> DeleteAgent(Guid agentId);
         BaseResponse<AgentResponse> GetAgentState(Guid agentId); 

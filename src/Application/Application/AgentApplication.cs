@@ -10,34 +10,20 @@ namespace CallCenterAgentManager.Application
 {
     public class AgentApplication : ApplicationBase<AgentBase<Guid>, Guid>, IAgentApplication
     {
-        private readonly IServiceBase<AgentBase<Guid>, Guid> _serviceBase;
+        private readonly IAgentService<AgentBase<Guid>, Guid> _agentService;
         private readonly IMapper _mapper;
         private readonly ILogger<AgentApplication> _logger;
 
         public AgentApplication(
             IMapper mapper,
             ILogger<AgentApplication> logger,
-            IServiceBase<AgentBase<Guid>, Guid> serviceBase)
+            IServiceBase<AgentBase<Guid>, Guid> serviceBase,
+            IAgentService<AgentBase<Guid>, Guid> agentService)
             : base(serviceBase)
         {
             _mapper = mapper;
             _logger = logger;
-            _serviceBase = serviceBase;
-        }
-
-        public BaseResponse<AgentResponse> CreateAgent(AgentCreateRequest request)
-        {
-            try
-            {
-                var newAgent = _mapper.Map<AgentBase<Guid>>(request);
-                Add(newAgent); 
-                var agentResponse = _mapper.Map<AgentResponse>(newAgent);
-                return new BaseResponse<AgentResponse> { Data = agentResponse };
-            }
-            catch (Exception ex)
-            {
-                return LogAndReturnError<AgentResponse>("Error creating agent", ex);
-            }
+            _agentService = agentService;
         }
 
         public BaseResponse<AgentResponse> GetAgentById(Guid agentId)
@@ -59,25 +45,24 @@ namespace CallCenterAgentManager.Application
             }
         }
 
-        public BaseResponse<IEnumerable<AgentResponse>> GetAllAgents()
+        public BaseResponse<AgentResponse> CreateAgent(AgentCreateRequest request)
         {
             try
             {
-                var agents = _serviceBase.GetAll();
+                var newAgent = _mapper.Map<AgentBase<Guid>>(request);
+                newAgent.State = "AVAILABLE"; 
+                newAgent.LastActivityTimestampUtc = DateTime.UtcNow;
 
-                var agentResponses = _mapper.Map<IEnumerable<AgentResponse>>(agents);
+                Add(newAgent);
+                var agentResponse = _mapper.Map<AgentResponse>(newAgent);
 
-                return new BaseResponse<IEnumerable<AgentResponse>>
-                {
-                    Data = agentResponses
-                };
+                return new BaseResponse<AgentResponse> { Data = agentResponse };
             }
             catch (Exception ex)
             {
-                return LogAndReturnError<IEnumerable<AgentResponse>>("Error fetching all agents", ex);
+                return LogAndReturnError<AgentResponse>("Error creating agent", ex);
             }
         }
-
 
         public BaseResponse<bool> UpdateAgent(Guid agentId, AgentUpdateRequest request)
         {
@@ -141,15 +126,8 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                var agent = GetById(agentId);
-                if (agent == null)
-                {
-                    return new BaseResponse<bool> { Errors = new List<ErrorResponse> { new ErrorResponse { ErrorMessage = "Agent not found." } } };
-                }
-
-                agent.State = request.Action;
-                Update(agent);
-                return new BaseResponse<bool> { Data = true };
+                var result = _agentService.UpdateAgentState(agentId, request);
+                return new BaseResponse<bool> { Data = result.Data };
             }
             catch (Exception ex)
             {

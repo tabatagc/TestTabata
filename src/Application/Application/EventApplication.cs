@@ -10,29 +10,27 @@ namespace CallCenterAgentManager.Application
 {
     public class EventApplication : ApplicationBase<EventBase<Guid>, Guid>, IEventApplication
     {
-        private readonly IServiceBase<EventBase<Guid>, Guid> _serviceBase;
+        private readonly IEventService<EventBase<Guid>, Guid> _eventService;
         private readonly IMapper _mapper;
         private readonly ILogger<EventApplication> _logger;
 
         public EventApplication(
             IMapper mapper,
             ILogger<EventApplication> logger,
-            IServiceBase<EventBase<Guid>, Guid> serviceBase)
+            IServiceBase<EventBase<Guid>, Guid> serviceBase,
+            IEventService<EventBase<Guid>, Guid> eventService)
             : base(serviceBase)
         {
             _mapper = mapper;
             _logger = logger;
-            _serviceBase = serviceBase;
+            _eventService = eventService;
         }
 
         public BaseResponse<EventResponse> ProcessEvent(CallCenterEventRequest request)
         {
             try
             {
-                var eventEntity = _mapper.Map<EventBase<Guid>>(request);
-                Add(eventEntity);
-                var eventResponse = _mapper.Map<EventResponse>(eventEntity);
-                return new BaseResponse<EventResponse> { Data = eventResponse };
+                return _eventService.ProcessEvent(request);
             }
             catch (Exception ex)
             {
@@ -44,10 +42,7 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                var events = _serviceBase.GetAll();
-                var eventResponses = _mapper.Map<IEnumerable<EventResponse>>(events);
-
-                return new BaseResponse<IEnumerable<EventResponse>> { Data = eventResponses };
+                return _eventService.GetRecentEvents();
             }
             catch (Exception ex)
             {

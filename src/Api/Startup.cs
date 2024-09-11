@@ -89,9 +89,12 @@ namespace CallCenterAgentManager.Api
             }
             #endregion
 
-            #region AutoMapper
+            #region AutoMapper and Domain
             services.AddAutoMapper(typeof(RequestsProfile), typeof(ResponseProfile));
-
+            
+            services.AddTransient(typeof(IServiceBase<Domain.Entities.AgentBase<Guid>, Guid>), typeof(ServiceBase<Domain.Entities.AgentBase<Guid>, Guid>));
+            services.AddTransient(typeof(IServiceBase<Domain.Entities.EventBase<Guid>, Guid>), typeof(ServiceBase<Domain.Entities.EventBase<Guid>, Guid>));
+            services.AddTransient(typeof(IServiceBase<Domain.Entities.QueueBase<Guid>, Guid>), typeof(ServiceBase<Domain.Entities.QueueBase<Guid>, Guid>));
             #endregion
 
             #region Application Layer
@@ -103,37 +106,36 @@ namespace CallCenterAgentManager.Api
             #endregion
 
             #region Services Layer
+            services.AddSingleton<StrategyFactory>();
             services.AddTransient(typeof(IServiceBase<,>), typeof(ServiceBase<,>));
+            services.AddTransient(typeof(IDataStrategy<,>), typeof(DocumentStrategy<,>));
+            services.AddTransient(typeof(IDataStrategy<,>), typeof(RelationalStrategy<,>));
 
             services.AddTransient(typeof(IServiceBase<Domain.Entities.Relational.Agent, Guid>), typeof(AgentService<Domain.Entities.Relational.Agent, Guid>));
             services.AddTransient(typeof(IServiceBase<Domain.Entities.Document.Agent, string>), typeof(AgentService<Domain.Entities.Document.Agent, string>));
+            
+            services.AddTransient(typeof(IServiceBase<Domain.Entities.AgentBase<Guid>, Guid>), typeof(AgentService<Domain.Entities.AgentBase<Guid>, Guid>));
+            services.AddTransient(typeof(IServiceBase<Domain.Entities.AgentBase<string>, string>), typeof(AgentService<Domain.Entities.AgentBase<string>, string>));
 
             services.AddTransient(typeof(IEventService<Domain.Entities.Relational.Event, Guid>), typeof(EventService<Domain.Entities.Relational.Event, Guid>));
             services.AddTransient(typeof(IEventService<Domain.Entities.Document.Event, string>), typeof(EventService<Domain.Entities.Document.Event, string>));
 
             services.AddTransient(typeof(IQueueService<Domain.Entities.Relational.Queue, Guid>), typeof(QueueService<Domain.Entities.Relational.Queue, Guid>));
             services.AddTransient(typeof(IQueueService<Domain.Entities.Document.Queue, string>), typeof(QueueService<Domain.Entities.Document.Queue, string>));
-       
-         
-            services.AddSingleton<StrategyFactory>();
-            services.AddTransient(typeof(IDataStrategy<,>), typeof(DocumentStrategy<,>));
-            services.AddTransient(typeof(IDataStrategy<,>), typeof(RelationalStrategy<,>));
-
-            services.AddSingleton<IRepositoryFactory, RepositoryFactory>();
-
 
             #endregion
 
             #region Repository Layer
+            services.AddSingleton<IRepositoryFactory, RepositoryFactory>();
+            services.AddTransient(typeof(IRepositoryBase<,>), typeof(DocumentRepositoryBase<,>));
+            services.AddTransient(typeof(IRepositoryBase<,>), typeof(RelationalRepositoryBase<,>));
 
-            services.AddTransient(typeof(DocumentRepositoryBase<,>));
-            services.AddTransient(typeof(RelationalRepositoryBase<,>));
 
-            services.AddTransient<IRepositoryFactory, RepositoryFactory>();
             services.AddTransient<Domain.Repository.Relational.IQueueRepository, Data.Repositories.Relational.QueueRepository>();
             services.AddTransient<Domain.Repository.Document.IQueueRepository, Data.Repositories.Document.QueueRepository>();
-
             #endregion
+
+            services.AddControllers();
         }
 
         private void ConfigureSwagger(IServiceCollection services)

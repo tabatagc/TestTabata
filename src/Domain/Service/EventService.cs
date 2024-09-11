@@ -4,6 +4,7 @@ using CallCenterAgentManager.Domain.Entities;
 using CallCenterAgentManager.Domain.Strategy;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CallCenterAgentManager.Domain.Service
 {
@@ -32,7 +33,10 @@ namespace CallCenterAgentManager.Domain.Service
 
         public BaseResponse<IEnumerable<EventResponse>> GetRecentEvents()
         {
-            var events = _dataStrategy.GetAll();
+            var events = _dataStrategy.GetAll()
+                                      .OrderByDescending(e => e.TimestampUtc)
+                                      .Take(100);
+
             var eventResponses = new List<EventResponse>();
 
             foreach (var ev in events)
@@ -44,10 +48,10 @@ namespace CallCenterAgentManager.Domain.Service
                     Action = ev.Action,
                     TimestampUtc = ev.TimestampUtc
                 });
-
             }
 
             return new BaseResponse<IEnumerable<EventResponse>> { Data = eventResponses };
         }
+
     }
 }

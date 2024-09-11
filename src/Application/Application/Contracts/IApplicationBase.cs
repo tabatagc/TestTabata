@@ -7,5 +7,6 @@
         void Update(TEntity entity);
         void AddOrUpdate(TEntity entity);
         void Remove(TEntity entity);
+        IEnumerable<TEntity> GetAll();
     }
 }
