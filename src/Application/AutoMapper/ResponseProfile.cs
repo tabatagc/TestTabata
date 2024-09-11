@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using CallCenterAgentManager.Domain.DTO.Response;
-using CallCenterAgentManager.Domain.Entities.Document;
 
 namespace CallCenterAgentManager.Application.AutoMapper.Mappings
 {
@@ -15,7 +14,7 @@ namespace CallCenterAgentManager.Application.AutoMapper.Mappings
                 .ForMember(dest => dest.CurrentState, opt => opt.MapFrom(src => src.State))
                 .ForMember(dest => dest.LastActivityTimestampUtc, opt => opt.MapFrom(src => src.LastActivityTimestampUtc));
 
-            CreateMap<Agent, AgentResponse>()
+            CreateMap<Domain.Entities.Document.Agent, AgentResponse>()
                 .ForMember(dest => dest.AgentId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.AgentName, opt => opt.MapFrom(src => src.AgentName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
@@ -28,7 +27,7 @@ namespace CallCenterAgentManager.Application.AutoMapper.Mappings
                 .ForMember(dest => dest.Action, opt => opt.MapFrom(src => src.Action))
                 .ForMember(dest => dest.TimestampUtc, opt => opt.MapFrom(src => src.TimestampUtc));
 
-            CreateMap<Event, EventResponse>()
+            CreateMap<Domain.Entities.Document.Event, EventResponse>()
                 .ForMember(dest => dest.EventId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.AgentId, opt => opt.MapFrom(src => src.AgentId))
                 .ForMember(dest => dest.Action, opt => opt.MapFrom(src => src.Action))
@@ -38,7 +37,7 @@ namespace CallCenterAgentManager.Application.AutoMapper.Mappings
                 .ForMember(dest => dest.QueueId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.QueueName, opt => opt.MapFrom(src => src.QueueName));
 
-            CreateMap<Queue, QueueResponse>()
+            CreateMap<Domain.Entities.Document.Queue, QueueResponse>()
                 .ForMember(dest => dest.QueueId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.QueueName, opt => opt.MapFrom(src => src.QueueName));
         }

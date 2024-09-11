@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using CallCenterAgentManager.Application.AutoMapper.Factory.Contracts;
 using CallCenterAgentManager.Application.Contracts;
 using CallCenterAgentManager.Domain.DTO.Request;
 using CallCenterAgentManager.Domain.DTO.Response;
@@ -11,33 +11,30 @@ namespace CallCenterAgentManager.Application
     public class AgentApplication : ApplicationBase<AgentBase<Guid>, Guid>, IAgentApplication
     {
         private readonly IAgentService<AgentBase<Guid>, Guid> _agentService;
-        private readonly IMapper _mapper;
         private readonly ILogger<AgentApplication> _logger;
+        private readonly IEntityStrategyFactory _entityStrategyFactory;
 
         public AgentApplication(
-            IMapper mapper,
             ILogger<AgentApplication> logger,
             IServiceBase<AgentBase<Guid>, Guid> serviceBase,
-            IAgentService<AgentBase<Guid>, Guid> agentService)
-            : base(serviceBase)
+            IAgentService<AgentBase<Guid>, Guid> agentService,
+            IEntityStrategyFactory entityStrategyFactory)
+            : base(entityStrategyFactory)
         {
-            _mapper = mapper;
             _logger = logger;
             _agentService = agentService;
+            _entityStrategyFactory = entityStrategyFactory;
         }
 
         public BaseResponse<AgentResponse> GetAgentById(Guid agentId)
         {
             try
             {
-                var agent = GetById(agentId);
+                var strategy = _entityStrategyFactory.GetStrategy<AgentBase<Guid>, Guid>();
+                var agent = strategy.GetById(agentId);
 
-                var agentResponse = _mapper.Map<AgentResponse>(agent);
-
-                return new BaseResponse<AgentResponse>
-                {
-                    Data = agentResponse
-                };
+                var agentResponse = _entityStrategyFactory.MapEntityToResponse<AgentResponse>(agent);
+                return new BaseResponse<AgentResponse> { Data = agentResponse };
             }
             catch (Exception ex)
             {
@@ -49,13 +46,24 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                var newAgent = _mapper.Map<AgentBase<Guid>>(request);
-                newAgent.State = "AVAILABLE"; 
+                var strategy = _entityStrategyFactory.GetStrategy<AgentBase<Guid>, Guid>();
+                if (strategy == null)
+                {
+                    throw new Exception("Strategy is null");
+                }
+
+                var newAgent = _entityStrategyFactory.MapRequestToEntity<AgentBase<Guid>>(request);
+                if (newAgent == null)
+                {
+                    throw new Exception("Failed to map request to AgentBase<Guid>");
+                }
+                
+                newAgent.State = "AVAILABLE";
                 newAgent.LastActivityTimestampUtc = DateTime.UtcNow;
 
-                Add(newAgent);
-                var agentResponse = _mapper.Map<AgentResponse>(newAgent);
+                strategy.Add(newAgent);
 
+                var agentResponse = _entityStrategyFactory.MapEntityToResponse<AgentResponse>(newAgent);
                 return new BaseResponse<AgentResponse> { Data = agentResponse };
             }
             catch (Exception ex)
@@ -68,14 +76,15 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                var agent = GetById(agentId);
+                var strategy = _entityStrategyFactory.GetStrategy<AgentBase<Guid>, Guid>();
+                var agent = strategy.GetById(agentId);
                 if (agent == null)
                 {
                     return new BaseResponse<bool> { Errors = new List<ErrorResponse> { new ErrorResponse { ErrorMessage = "Agent not found." } } };
                 }
 
-                _mapper.Map(request, agent);
-                Update(agent);
+                _entityStrategyFactory.MapRequestToEntity(request, agent);
+                strategy.Update(agent);
                 return new BaseResponse<bool> { Data = true };
             }
             catch (Exception ex)
@@ -88,13 +97,14 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                var agent = GetById(agentId);
+                var strategy = _entityStrategyFactory.GetStrategy<AgentBase<Guid>, Guid>();
+                var agent = strategy.GetById(agentId);
                 if (agent == null)
                 {
                     return new BaseResponse<bool> { Errors = new List<ErrorResponse> { new ErrorResponse { ErrorMessage = "Agent not found." } } };
                 }
 
-                Remove(agent);
+                strategy.Remove(agent);
                 return new BaseResponse<bool> { Data = true };
             }
             catch (Exception ex)
@@ -107,13 +117,14 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                var agent = GetById(agentId);
+                var strategy = _entityStrategyFactory.GetStrategy<AgentBase<Guid>, Guid>();
+                var agent = strategy.GetById(agentId);
                 if (agent == null)
                 {
                     return new BaseResponse<AgentResponse> { Errors = new List<ErrorResponse> { new ErrorResponse { ErrorMessage = "Agent not found." } } };
                 }
 
-                var agentResponse = _mapper.Map<AgentResponse>(agent);
+                var agentResponse = _entityStrategyFactory.MapEntityToResponse<AgentResponse>(agent);
                 return new BaseResponse<AgentResponse> { Data = agentResponse };
             }
             catch (Exception ex)
@@ -141,5 +152,4 @@ namespace CallCenterAgentManager.Application
             return new BaseResponse<T> { Errors = new List<ErrorResponse> { new ErrorResponse { ErrorMessage = message } } };
         }
     }
-
 }

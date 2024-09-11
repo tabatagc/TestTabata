@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using CallCenterAgentManager.Application.AutoMapper.Factory.Contracts;
 using CallCenterAgentManager.Application.Contracts;
 using CallCenterAgentManager.Domain.DTO.Request;
 using CallCenterAgentManager.Domain.DTO.Response;
@@ -11,26 +11,31 @@ namespace CallCenterAgentManager.Application
     public class EventApplication : ApplicationBase<EventBase<Guid>, Guid>, IEventApplication
     {
         private readonly IEventService<EventBase<Guid>, Guid> _eventService;
-        private readonly IMapper _mapper;
         private readonly ILogger<EventApplication> _logger;
+        private readonly IEntityStrategyFactory _entityStrategyFactory;
 
         public EventApplication(
-            IMapper mapper,
             ILogger<EventApplication> logger,
             IServiceBase<EventBase<Guid>, Guid> serviceBase,
-            IEventService<EventBase<Guid>, Guid> eventService)
-            : base(serviceBase)
+            IEventService<EventBase<Guid>, Guid> eventService,
+            IEntityStrategyFactory entityStrategyFactory)
+            : base(entityStrategyFactory)
         {
-            _mapper = mapper;
             _logger = logger;
             _eventService = eventService;
+            _entityStrategyFactory = entityStrategyFactory;
         }
 
         public BaseResponse<EventResponse> ProcessEvent(CallCenterEventRequest request)
         {
             try
             {
-                return _eventService.ProcessEvent(request);
+                var strategy = _entityStrategyFactory.GetStrategy<EventBase<Guid>, Guid>();
+                var eventEntity = _entityStrategyFactory.MapRequestToEntity<EventBase<Guid>>(request);
+                _eventService.ProcessEvent(request);
+                var eventResponse = _entityStrategyFactory.MapEntityToResponse<EventResponse>(eventEntity);
+
+                return new BaseResponse<EventResponse> { Data = eventResponse };
             }
             catch (Exception ex)
             {
@@ -42,7 +47,11 @@ namespace CallCenterAgentManager.Application
         {
             try
             {
-                return _eventService.GetRecentEvents();
+                var strategy = _entityStrategyFactory.GetStrategy<EventBase<Guid>, Guid>();
+                var recentEvents = strategy.GetAll();
+                var eventResponses = _entityStrategyFactory.MapEntityToResponse<IEnumerable<EventResponse>>(recentEvents);
+
+                return new BaseResponse<IEnumerable<EventResponse>> { Data = eventResponses };
             }
             catch (Exception ex)
             {
@@ -53,10 +62,7 @@ namespace CallCenterAgentManager.Application
         private BaseResponse<T> LogAndReturnError<T>(string message, Exception ex)
         {
             _logger.LogError(ex, message);
-            return new BaseResponse<T>
-            {
-                Errors = new List<ErrorResponse> { new ErrorResponse { ErrorMessage = message } }
-            };
+            return new BaseResponse<T> { Errors = new List<ErrorResponse> { new ErrorResponse { ErrorMessage = message } } };
         }
     }
 }

@@ -1,12 +1,14 @@
-﻿namespace CallCenterAgentManager.Application.Contracts
+﻿using CallCenterAgentManager.Domain.Entities;
+
+namespace CallCenterAgentManager.Application.Contracts
 {
     public interface IApplicationBase<TEntity, TId>
+        where TEntity : BaseEntity<TId>
     {
-        TEntity GetById(TId id);
-        void Add(TEntity entity);
-        void Update(TEntity entity);
-        void AddOrUpdate(TEntity entity);
-        void Remove(TEntity entity);
-        IEnumerable<TEntity> GetAll();
+        void Add(object request);
+        TResponse GetById<TResponse>(TId id); 
+        IEnumerable<TResponse> GetAll<TResponse>();
+        void Update(TId id, object request);
+        void Remove(TId id);
     }
 }

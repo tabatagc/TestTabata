@@ -4,7 +4,6 @@ using CallCenterAgentManager.Domain.Entities;
 using CallCenterAgentManager.Domain.Service.Contracts;
 using CallCenterAgentManager.Domain.Strategy;
 using System;
-using System.Collections.Generic;
 
 namespace CallCenterAgentManager.Domain.Service
 {

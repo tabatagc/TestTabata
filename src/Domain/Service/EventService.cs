@@ -1,6 +1,7 @@
 ﻿using CallCenterAgentManager.Domain.DTO.Request;
 using CallCenterAgentManager.Domain.DTO.Response;
 using CallCenterAgentManager.Domain.Entities;
+using CallCenterAgentManager.Domain.Service.Contracts;
 using CallCenterAgentManager.Domain.Strategy;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,8 @@ using System.Linq;
 
 namespace CallCenterAgentManager.Domain.Service
 {
-    public class EventService<TEvent, TId> : ServiceBase<TEvent, TId> where TEvent : EventBase<TId>
+    public class EventService<TEvent, TId> : ServiceBase<TEvent, TId>, IEventService<TEvent, TId>
+        where TEvent : EventBase<TId>
     {
         public EventService(StrategyFactory strategyFactory) : base(strategyFactory.GetStrategy<TEvent, TId>())
         {

@@ -1,12 +1,13 @@
 ﻿using CallCenterAgentManager.Domain.DTO.Response;
 using CallCenterAgentManager.Domain.Entities;
+using CallCenterAgentManager.Domain.Service.Contracts;
 using CallCenterAgentManager.Domain.Strategy;
 using System;
 using System.Collections.Generic;
 
 namespace CallCenterAgentManager.Domain.Service
 {
-    public class QueueService<TQueue, TId> : ServiceBase<TQueue, TId> where TQueue : QueueBase<TId>
+    public class QueueService<TQueue, TId> : ServiceBase<TQueue, TId>, IQueueService<TQueue, TId> where TQueue : QueueBase<TId>
     {
         public QueueService(StrategyFactory strategyFactory) : base(strategyFactory.GetStrategy<TQueue, TId>())
         {
