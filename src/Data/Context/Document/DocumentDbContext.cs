@@ -1,5 +1,4 @@
-﻿using CallCenterAgentManager.Domain.Entities.Document;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 
 namespace CallCenterAgentManager.Data.Context.Document
 {
@@ -17,9 +16,5 @@ namespace CallCenterAgentManager.Data.Context.Document
         {
             return _database.GetCollection<TEntity>(collectionName);
         }
-
-        public IMongoCollection<Agent> Agents => _database.GetCollection<Agent>("Agents");
-        public IMongoCollection<Event> Events => _database.GetCollection<Event>("Events");
-        public IMongoCollection<Queue> Queues => _database.GetCollection<Queue>("Queues");
     }
 }

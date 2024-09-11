@@ -9,6 +9,7 @@ using CallCenterAgentManager.Data.Context.Document;
 using CallCenterAgentManager.Data.Context.Relational;
 using CallCenterAgentManager.Data.Repositories;
 using CallCenterAgentManager.Data.Repositories.Factory;
+using CallCenterAgentManager.Domain.Entities;
 using CallCenterAgentManager.Domain.Repository;
 using CallCenterAgentManager.Domain.Service;
 using CallCenterAgentManager.Domain.Service.Contracts;
@@ -18,11 +19,10 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System;
 using Microsoft.Extensions.Hosting;
-using CallCenterAgentManager.Domain.Entities;
+using Microsoft.OpenApi.Models;
+using System;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,22 +66,10 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     services.AddSwaggerGenNewtonsoftSupport();
 
-    // Database Configuration
-    if (Settings.UseNoSqlDatabase)
-    {
-        services.AddSingleton<DocumentDbContext>(sp => new DocumentDbContext(
-            Settings.NoSqlDbConnectionString,
-            Settings.NoSqlDatabaseName));
-    }
-    else
-    {
-        services.AddDbContext<RelationalDbContext>(options =>
-            options.UseNpgsql(Settings.RelationalDbConnectionString));
-    }
-
     // AutoMapper and Domain
-    services.AddSingleton<StrategyFactory>();
     services.AddAutoMapper(typeof(RequestsProfile), typeof(ResponseProfile));
+    services.AddSingleton<StrategyFactory>();
+    services.AddSingleton<IRepositoryFactory, RepositoryFactory>();
 
     // Application Layer
     services.AddScoped<IEntityStrategyFactory, EntityStrategyFactory>();
@@ -103,30 +91,46 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddTransient<IEventService<EventBase<Guid>, Guid>, EventService<EventBase<Guid>, Guid>>();
     services.AddTransient<IQueueService<QueueBase<Guid>, Guid>, QueueService<QueueBase<Guid>, Guid>>();
 
-    // Strategy Layer
-    services.AddTransient<IDataStrategy<AgentBase<Guid>, Guid>, RelationalStrategy<AgentBase<Guid>, Guid>>();
-    services.AddTransient<IDataStrategy<AgentBase<string>, string>, DocumentStrategy<AgentBase<string>, string>>();
 
-    services.AddTransient<IDataStrategy<EventBase<Guid>, Guid>, RelationalStrategy<EventBase<Guid>, Guid>>();
-    services.AddTransient<IDataStrategy<EventBase<string>, string>, DocumentStrategy<EventBase<string>, string>>();
+    if (Settings.UseNoSqlDatabase)
+    {
+        services.AddSingleton<DocumentDbContext>(sp => new DocumentDbContext(
+            Settings.NoSqlDbConnectionString,
+            Settings.NoSqlDatabaseName));
 
-    services.AddTransient<IDataStrategy<QueueBase<Guid>, Guid>, RelationalStrategy<QueueBase<Guid>, Guid>>();
-    services.AddTransient<IDataStrategy<QueueBase<string>, string>, DocumentStrategy<QueueBase<string>, string>>();
+        //services.AddTransient(typeof(IRepositoryBase<,>), typeof(DocumentRepositoryBase<,>));
+        services.AddTransient<IDataStrategy<AgentBase<string>, string>, DocumentStrategy<AgentBase<string>, string>>();
+        services.AddTransient<IDataStrategy<EventBase<string>, string>, DocumentStrategy<EventBase<string>, string>>();
+        services.AddTransient<IDataStrategy<QueueBase<string>, string>, DocumentStrategy<QueueBase<string>, string>>();
 
+        services.AddTransient<IRepositoryBase<CallCenterAgentManager.Domain.Entities.Document.Agent, string>,
+            DocumentRepositoryBase<CallCenterAgentManager.Domain.Entities.Document.Agent, string>>();
+        services.AddTransient<IRepositoryBase<CallCenterAgentManager.Domain.Entities.Document.Event, string>,
+            DocumentRepositoryBase<CallCenterAgentManager.Domain.Entities.Document.Event, string>>();
+        services.AddTransient<IRepositoryBase<CallCenterAgentManager.Domain.Entities.Document.Queue, string>,
+            DocumentRepositoryBase<CallCenterAgentManager.Domain.Entities.Document.Queue, string>>();
+    }
+    else
+    {
+        services.AddDbContext<RelationalDbContext>(options =>
+            options.UseNpgsql(Settings.RelationalDbConnectionString));
 
-    // Repository Layer
-    services.AddSingleton<IRepositoryFactory, RepositoryFactory>();
-    services.AddTransient<IRepositoryBase<AgentBase<Guid>, Guid>, RelationalRepositoryBase<AgentBase<Guid>, Guid>>();
-    services.AddTransient<IRepositoryBase<AgentBase<string>, string>, DocumentRepositoryBase<AgentBase<string>, string>>();
+        //services.AddTransient(typeof(IRepositoryBase<,>), typeof(RelationalRepositoryBase<,>));
+        services.AddTransient<IDataStrategy<AgentBase<Guid>, Guid>, RelationalStrategy<AgentBase<Guid>, Guid>>();
+        services.AddTransient<IDataStrategy<EventBase<Guid>, Guid>, RelationalStrategy<EventBase<Guid>, Guid>>();
+        services.AddTransient<IDataStrategy<QueueBase<Guid>, Guid>, RelationalStrategy<QueueBase<Guid>, Guid>>();
 
-    services.AddTransient<IRepositoryBase<EventBase<Guid>, Guid>, RelationalRepositoryBase<EventBase<Guid>, Guid>>();
-    services.AddTransient<IRepositoryBase<EventBase<string>, string>, DocumentRepositoryBase<EventBase<string>, string>>();
-
-    services.AddTransient<IRepositoryBase<QueueBase<Guid>, Guid>, RelationalRepositoryBase<QueueBase<Guid>, Guid>>();
-    services.AddTransient<IRepositoryBase<QueueBase<string>, string>, DocumentRepositoryBase<QueueBase<string>, string>>();
+        services.AddTransient<IRepositoryBase<CallCenterAgentManager.Domain.Entities.Relational.Agent, Guid>,
+            RelationalRepositoryBase<CallCenterAgentManager.Domain.Entities.Relational.Agent, Guid>>();
+        services.AddTransient<IRepositoryBase<CallCenterAgentManager.Domain.Entities.Relational.Event, Guid>,
+            RelationalRepositoryBase<CallCenterAgentManager.Domain.Entities.Relational.Event, Guid>>();
+        services.AddTransient<IRepositoryBase<CallCenterAgentManager.Domain.Entities.Relational.Queue, Guid>,
+            RelationalRepositoryBase<CallCenterAgentManager.Domain.Entities.Relational.Queue, Guid>>();
+    }
 
     services.AddTransient<CallCenterAgentManager.Domain.Repository.Relational.IQueueRepository, CallCenterAgentManager.Data.Repositories.Relational.QueueRepository>();
     services.AddTransient<CallCenterAgentManager.Domain.Repository.Document.IQueueRepository, CallCenterAgentManager.Data.Repositories.Document.QueueRepository>();
+
 }
 
 void ConfigureMiddleware(WebApplication app)
